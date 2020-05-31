@@ -1,0 +1,38 @@
+# https://www.telerik.com/blogs/dockerizing-react-applications-for-continuous-integration
+
+sudo create-react-app app
+sudo chown -R jeanpierre app/
+
+# Dockerfile
+
+FROM node:8.9-alpine
+
+RUN mkdir /app
+WORKDIR /app
+COPY /src /app/src
+COPY ["package.json", "package-lock.json*", "./"]
+
+RUN npm install --production --silent && mv node_modules ../
+
+EXPOSE 3000
+
+# docker-compose.yml
+
+version: '3.4'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+    command: npm start
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/app
+
+sudo npm install
+sudo docker-compose build web
+sudo docker-compose up web

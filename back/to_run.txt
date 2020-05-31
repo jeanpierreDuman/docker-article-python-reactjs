@@ -1,0 +1,73 @@
+# Installation docker
+# https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04
+
+sudo apt-get update
+sudo apt-get remove docker docker-engine docker.io
+sudo apt install docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+docker --version
+sudo apt install docker-compose
+
+# Create project on docker
+# https://docs.docker.com/compose/django/
+
+# File : Dockerfile 
+
+FROM python:3
+ENV PYTHONUNBUFFERED 1
+RUN mkdir /project
+WORKDIR /project
+COPY requirements.txt /project/
+RUN pip install -r requirements.txt
+COPY . /project/
+
+# File : requirements.txt
+
+Django>=2.0,<3.0
+psycopg2>=2.7,<3.0
+
+# File : docker-compose.yml
+
+version: '3'
+
+services:
+  db:
+    image: postgres
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/project
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+# Connection postgres
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'HOST': 'db',
+        'PORT': 5432,
+    }
+}
+
+# Run command
+
+sudo docker-compose run web django-admin startproject config .
+sudo docker-compose run web python manage.py startapp app
+( sudo chown -R username /app
+
+sudo docker-compose up (-d)
+
+# Update database
+
+sudo docker-compose run web python manage.py migrate
+
+# GIT 
+
+git remote add origin https://gitlab.com/jeanpierreD/test-docker.git
